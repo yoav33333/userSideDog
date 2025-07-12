@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Variable Editor</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+    <h1>Edit Variable Groups</h1>
+    <form id="editor-form">
+        {% for group, vars in data.items() %}
+        <fieldset>
+            <legend>{{ group }}</legend>
+            <div class="group-body">
+                {% for var, val in vars.items() %}
+                <label>{{ var }}:
+                    <input name="{{ group }}::{{ var }}" value="{{ val }}" data-type="{{ val.__class__.__name__ }}">
+                </label><br>
+                {% endfor %}
+            </div>
+        </fieldset>
+        {% endfor %}
+    </form>
+    <div id="output"></div>
+</body>
+</html>
