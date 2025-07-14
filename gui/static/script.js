@@ -51,5 +51,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // 🕓 Optionally: refresh every 5 seconds
-  // setInterval(syncForm, 5000);
+  setInterval(syncForm, 5000);
 });

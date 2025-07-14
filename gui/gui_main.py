@@ -2,18 +2,17 @@ from flask import Flask, request, jsonify, render_template
 import threading
 import json
 
+from client import Client
 from globals import var_dict
 
 
 class VarEditorServer:
-    def __init__(self, grouped_var_map, host='127.0.0.1', port=5000):
+    def __init__(self, host='127.0.0.1', port=5000):
         self.app = Flask(
             __name__,
             template_folder="templates",
             static_folder="static"
         )
-        self.original_data = var_dict().getGlobals()
-        self.edited_data = {}
         self.host = host
         self.port = port
 
@@ -23,7 +22,7 @@ class VarEditorServer:
 
         @self.app.route("/data", methods=["GET"])
         def get_data():
-            return jsonify(self.original_data)
+            return jsonify(var_dict().getOldGlobals())
 
         @self.app.route("/submit", methods=["POST"])
         def ajax_submit():
@@ -58,6 +57,7 @@ class VarEditorServer:
                         var_dict().getGlobals()[group][var_name] = new_val
                 # var_dict().setGlobals(updated)
                 # vars_dict =
+                Client().updateServer()
                 return jsonify(success=True, data=var_dict().getGlobals())
             else:
                 return jsonify(success=False, errors=errors)
