@@ -1,113 +1,109 @@
-/* -------------------------------
-   🌐 Base Page Styling
----------------------------------*/
 body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: #f4f6f8;
-    color: #333;
-    padding: 2em;
-    margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f4f6f8;
+  color: #333;
+  padding: 2em;
+  margin: 0;
 }
 
-/* -------------------------------
-   🧾 Form Container
----------------------------------*/
+.container {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: flex-start;
+}
+
+.sidebar {
+  flex: 1;
+  min-width: 320px;
+}
+
+.main-panel {
+  flex: 2;
+  background: #fff;
+  padding: 1.5em;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 form {
-    background: #ffffff;
-    padding: 2em;
-    border-radius: 10px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-    max-width: 800px;
-    margin: auto;
+  background: #ffffff;
+  padding: 2em;
+  border-radius: 10px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
-/* -------------------------------
-   📦 Fieldset & Collapsible Group
----------------------------------*/
 fieldset {
-    margin-bottom: 1.5em;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 0.8em 1.2em;
-    overflow: hidden;
-    transition: max-height 0.4s ease, opacity 0.4s ease;
-    position: relative;
+  margin-bottom: 1.5em;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 0.8em 1.2em;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
+  position: relative;
 }
 
-/* Collapsed groups */
 .collapsed .group-body {
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
 }
 
-/* Expanded groups */
 .group-body {
-    max-height: 1000px;
-    opacity: 1;
-    transition: max-height 0.4s ease-in, opacity 0.4s ease-in;
+  max-height: 1000px;
+  opacity: 1;
+  transition: max-height 0.4s ease-in, opacity 0.4s ease-in;
 }
 
-/* -------------------------------
-   🧩 Legend (clickable header)
----------------------------------*/
 legend {
-    font-weight: bold;
-    font-size: 1.1em;
-    background-color: #e0e0e0;
-    border-radius: 5px;
-    padding: 0.4em 0.8em;
-    margin-left: 0.5em;
-    cursor: pointer;
-    user-select: none;
+  font-weight: bold;
+  font-size: 1.1em;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  padding: 0.4em 0.8em;
+  margin-left: 0.5em;
+  cursor: pointer;
+  user-select: none;
 }
 
-/* -------------------------------
-   📝 Input Styling
----------------------------------*/
 input[type="text"],
-input[type="number"],
-input[type="checkbox"] {
-    padding: 0.3em 0.6em;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    margin-left: 0.5em;
-    font-size: 0.95em;
-    width: auto;
+input[type="number"] {
+  padding: 0.3em 0.6em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-left: 0.5em;
+  font-size: 0.95em;
 }
 
 label {
-    display: block;
-    margin-bottom: 0.8em;
-    font-size: 0.95em;
+  display: block;
+  margin-bottom: 0.8em;
+  font-size: 0.95em;
 }
 
-/* -------------------------------
-   💬 Output Feedback Area
----------------------------------*/
+.graph-toggle {
+  margin-left: 1em;
+}
+
 #output {
-    margin-top: 1.5em;
-    padding: 1em;
-    border-radius: 6px;
-    font-size: 0.95em;
+  margin-top: 1.5em;
+  padding: 1em;
+  border-radius: 6px;
+  font-size: 0.95em;
 }
 
-#output span {
-    font-weight: bold;
-}
-
-#output ul {
-    padding-left: 1.2em;
-}
-
-/* -------------------------------
-   ✅ Success & ✖ Error Colors
----------------------------------*/
 #output span[style*="green"] {
-    color: green;
+  color: green;
 }
 
 #output span[style*="red"] {
-    color: crimson;
+  color: crimson;
+}
+input.error {
+  border: 2px solid crimson;
+  background: #ffeaea;
+}
+input[data-editing="true"] {
+  background: #fff5cc;
 }

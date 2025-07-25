@@ -17,6 +17,6 @@ if __name__ == "__main__":
     print("hello")
     while globals.run_globals().isRunning():
         pass
-        # print(globals.var_dict().getOldGlobals())
-        # print(globals.var_dict().getGlobals())
+        # print(var_dict().getOldGlobals())
+        # print(var_dict().getGlobals())
 

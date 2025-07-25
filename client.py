@@ -11,14 +11,18 @@ from util.singelton import SingletonMeta
 class Client(metaclass=SingletonMeta):
     host = "10.10.0.41"
     port = 65432
-    pocket_size = 1024
+    pocket_size = 8096
     update_server = False
     reset_flag = False
     def getDataFromServer(self, client_socket):
         while run_globals().isRunning() and not self.reset_flag:
-            time.sleep(5)
+            # time.sleep(5)
             try:
                 data = client_socket.recv(self.pocket_size)
+                if not data:
+                    print("No data received from server, resetting connection.")
+                    self.reset_flag = True
+                    return
                 print("Echo from server:", data.decode())
                 var_dict().setOldGlobals(json.loads(data.decode()))
                 var_dict().setGlobals(json.loads(data.decode()))
@@ -32,14 +36,8 @@ class Client(metaclass=SingletonMeta):
             try:
                 # print(self.update_server)
                 if self.update_server:
-                    print(var_dict().getChangedGlobals())
-                    print(var_dict().getChangedGlobals())
-                    print(var_dict().getChangedGlobals())
-                    print(var_dict().getChangedGlobals())
-                    print(var_dict().getChangedGlobals())
-                    print(var_dict().getChangedGlobals())
-                    print(var_dict().getChangedGlobals())
                     client_socket.sendall(json.dumps(var_dict().getChangedGlobals()).encode())
+                    print("dswfe")
                     self.update_server = False
             except socket.error as e:
                 print(f"Socket error: {e}")
@@ -47,17 +45,20 @@ class Client(metaclass=SingletonMeta):
 
 
     def run(self):
+
         while run_globals().isRunning():
+            self.reset_flag = False
             try:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
                     client_socket.connect((self.host, self.port))
                     self.reset_flag = False
                     print("Connected to server.")
                     # self.getDataFromServer(client_socket)
-                    threading.Thread(target = lambda:self.getDataFromServer(client_socket),daemon=True).start()
                     threading.Thread(target = lambda:self.giveUpdatedDataToServer(client_socket),daemon=True).start()
+                    threading.Thread(target = lambda:self.getDataFromServer(client_socket),daemon=True).start()
                     while run_globals().isRunning() and not self.reset_flag:
                         pass
+                        # self.getDataFromServer(client_socket)
 
                     #     try:
                     #         print(var_dict().getChangedGlobals())

@@ -4,6 +4,7 @@ import json
 
 from client import Client
 from globals import var_dict
+from flask_caching import Cache
 
 
 class VarEditorServer:
@@ -13,6 +14,8 @@ class VarEditorServer:
             template_folder="templates",
             static_folder="static"
         )
+        self.cache = Cache(self.app, config={'CACHE_TYPE': 'SimpleCache'})
+
         self.host = host
         self.port = port
 
@@ -21,8 +24,10 @@ class VarEditorServer:
             return render_template("form.html", data=var_dict().getGlobals())
 
         @self.app.route("/data", methods=["GET"])
+        @self.cache.cached(timeout=2)
         def get_data():
             return jsonify(var_dict().getOldGlobals())
+
 
         @self.app.route("/submit", methods=["POST"])
         def ajax_submit():
