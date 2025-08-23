@@ -3,9 +3,14 @@ import base64
 import json
 import socket
 import threading
+import time
+from enum import Enum
+from time import sleep
+
 import mediapipe as mp
 import cv2
 import numpy as np
+import pygame
 import websockets
 
 mp_hands = mp.solutions.hands
@@ -15,15 +20,67 @@ mp_drawing = mp.solutions.drawing_utils  # For drawing landmarks and connections
 WRIST = 0
 FINGER_TIPS = [8, 12, 16, 20]   # Index, Middle, Ring, Pinky tips
 FINGER_PIPS = [6, 10, 14, 18]   # Corresponding PIP joints
+class Mode(Enum):
+    Manual = 0
+    Auto = 1
+mode = Mode.Auto
+joystick = None
+try:
+    pygame.init()
+    pygame.joystick.init()
+    joystick = pygame.joystick.Joystick(0)
+    joystick.init()
+except:
+    mode = Mode.Manual
+last_input = False
 async def receive_image_server(websocket):
     try:
         async for message in websocket:
+            global mode
+            print(mode)
             data = np.frombuffer(message, dtype=np.uint8)
             image = cv2.imdecode(data, cv2.IMREAD_COLOR)
             if image is not None:
+                global joystick, last_input
+
                 print("Received image", image.shape)
-                _, cg = findFingers(image)
-                await websocket.send(str(cg[0]) if cg else "No hands detected")
+                pygame.event.pump()
+                button = joystick.get_button(0)
+
+                if button != last_input and button != 0:
+                    if button:
+                        mode = Mode.Auto if mode == Mode.Manual else Mode.Manual
+                        print(f"Mode changed to: {mode.name}")
+                last_input = button
+                if mode == Mode.Manual:
+
+                    x = joystick.get_axis(2)
+                    y = joystick.get_axis(1)
+                    print(f"Joystick position: x={x}, y={y}")
+                    if abs(x) <= 0.2 and abs(y) <= 0.2:
+                        response = {
+                            "x": "No",
+                            "y": False,
+                        }
+                        await websocket.send(json.dumps(response).encode('utf-8'))
+                    else:
+                        response = {
+
+                            "x": x,
+                            "y": -y,
+                        }
+                        await websocket.send(json.dumps(response).encode('utf-8'))
+
+                else:
+                    _, cg, is_open = findFingers(image)
+                    print(cg[0][0] if cg else "No hands detected")
+                    print(str(cg[0][0]/640*2-1)if cg else "No hands detected")
+                    response = {
+
+                        "x": (cg[0][0]/640*2-1) if cg else "No hands detected",
+                        "y": 1.0 if is_open else -1.0,
+                    }
+                    await websocket.send(json.dumps(response).encode('utf-8'))
                 cv2.imshow("Server Image", image)
                 cv2.waitKey(1)
             else:
@@ -58,23 +115,25 @@ def findFingers(frame, draw=True):
     results = hands.process(frame_rgb)
     centers = []
 
+    is_open = None
     if results.multi_hand_landmarks:
         h, w, _ = frame.shape
         for hand_landmarks in results.multi_hand_landmarks:
-            if is_hand_open(hand_landmarks, h, w):
-                xs = [lm.x * w for lm in hand_landmarks.landmark]
-                ys = [lm.y * h for lm in hand_landmarks.landmark]
-                cx, cy = int(np.mean(xs)), int(np.mean(ys))
-                centers.append((cx, cy))
+            is_open = is_hand_open(hand_landmarks, h, w)
+            # if is_open:
+            xs = [lm.x * w for lm in hand_landmarks.landmark]
+            ys = [lm.y * h for lm in hand_landmarks.landmark]
+            cx, cy = int(np.mean(xs)), int(np.mean(ys))
+            centers.append((cx, cy))
 
-                if draw:
-                    mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-                    cv2.circle(frame, (cx, cy), 8, (0, 255, 0), -1)
-                    cv2.putText(frame, f"({cx},{cy})", (cx + 10, cy - 10),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-                    cv2.arrowedLine(frame, (640 // 2, 480 // 2), (cx, cy), (0, 255, 255), 3, tipLength=0.1)
-
-    return frame, centers
+            if draw:
+                mp_drawing.draw_landmarks(frame, hand_landmarks, mp_hands.HAND_CONNECTIONS)
+                cv2.circle(frame, (cx, cy), 8, (0, 255, 0), -1)
+                cv2.putText(frame, f"({cx},{cy})", (cx + 10, cy - 10),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+                cv2.arrowedLine(frame, (640 // 2, 480 // 2), (cx, cy), (0, 255 if is_open else 0, 255), 3, tipLength=0.1)
+            break
+    return frame, centers, is_open
 
 
 
